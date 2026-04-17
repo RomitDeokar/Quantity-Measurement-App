@@ -1,49 +1,68 @@
 public class QuantityMeasurementApp {
 
-    // ✅ Inner Class
+    // ✅ Feet Class
     static class Feet {
         private final double value;
 
-        // Constructor
         public Feet(double value) {
             this.value = value;
         }
 
-        // Getter (optional but useful)
-        public double getValue() {
-            return value;
-        }
-
-        // ✅ Override equals()
         @Override
         public boolean equals(Object obj) {
-
-            // 1. Same reference
             if (this == obj) return true;
-
-            // 2. Null or different type
             if (obj == null || getClass() != obj.getClass()) return false;
 
-            // 3. Cast safely
             Feet other = (Feet) obj;
-
-            // 4. Compare using Double.compare
             return Double.compare(this.value, other.value) == 0;
         }
 
-        // (Optional but recommended)
         @Override
         public int hashCode() {
             return Double.hashCode(value);
         }
     }
 
+    // ✅ Inches Class
+    static class Inches {
+        private final double value;
+
+        public Inches(double value) {
+            this.value = value;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null || getClass() != obj.getClass()) return false;
+
+            Inches other = (Inches) obj;
+            return Double.compare(this.value, other.value) == 0;
+        }
+
+        @Override
+        public int hashCode() {
+            return Double.hashCode(value);
+        }
+    }
+
+    // ✅ Separate methods (important requirement)
+    public static boolean compareFeet(double a, double b) {
+        Feet f1 = new Feet(a);
+        Feet f2 = new Feet(b);
+        return f1.equals(f2);
+    }
+
+    public static boolean compareInches(double a, double b) {
+        Inches i1 = new Inches(a);
+        Inches i2 = new Inches(b);
+        return i1.equals(i2);
+    }
+
     // ✅ Main method
     public static void main(String[] args) {
 
-        Feet f1 = new Feet(1.0);
-        Feet f2 = new Feet(1.0);
-
-        System.out.println("Are equal? " + f1.equals(f2));
+        System.out.println("Feet comparison: " + compareFeet(1.0, 1.0));
+        System.out.println("Inches comparison: " + compareInches(1.0, 1.0));
     }
 }
