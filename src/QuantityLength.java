@@ -1,67 +1,23 @@
-package com.quantity;
+// ✅ STATIC ADD METHOD (CORE UC6)
+public static QuantityLength add(QuantityLength q1, QuantityLength q2) {
 
-public class QuantityLength {
-
-    private final double value;
-    private final LengthUnit unit;
-
-    public QuantityLength(double value, LengthUnit unit) {
-        if (!Double.isFinite(value)) {
-            throw new IllegalArgumentException("Invalid numeric value");
-        }
-        if (unit == null) {
-            throw new IllegalArgumentException("Unit cannot be null");
-        }
-        this.value = value;
-        this.unit = unit;
+    if (q1 == null || q2 == null) {
+        throw new IllegalArgumentException("Operands cannot be null");
     }
 
-    // ✅ STATIC CONVERSION API
-    public static double convert(double value, LengthUnit source, LengthUnit target) {
-
-        if (!Double.isFinite(value)) {
-            throw new IllegalArgumentException("Invalid value");
-        }
-
-        if (source == null || target == null) {
-            throw new IllegalArgumentException("Units cannot be null");
-        }
-
-        double valueInFeet = source.toFeet(value);
-        return target.fromFeet(valueInFeet);
+    if (!Double.isFinite(q1.value) || !Double.isFinite(q2.value)) {
+        throw new IllegalArgumentException("Invalid numeric values");
     }
 
-    // ✅ INSTANCE CONVERSION
-    public QuantityLength convertTo(LengthUnit target) {
-        double converted = convert(this.value, this.unit, target);
-        return new QuantityLength(converted, target);
-    }
+    // Step 1: Convert both to base (feet)
+    double q1Feet = q1.unit.toFeet(q1.value);
+    double q2Feet = q2.unit.toFeet(q2.value);
 
-    // ✅ METHOD OVERLOADING
-    public static double demonstrateLengthConversion(double value, LengthUnit from, LengthUnit to) {
-        return convert(value, from, to);
-    }
+    // Step 2: Add
+    double sumFeet = q1Feet + q2Feet;
 
-    public static double demonstrateLengthConversion(QuantityLength q, LengthUnit to) {
-        return convert(q.value, q.unit, to);
-    }
+    // Step 3: Convert back to unit of FIRST operand
+    double result = q1.unit.fromFeet(sumFeet);
 
-    // ✅ EQUALS METHOD
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-
-        QuantityLength other = (QuantityLength) obj;
-
-        double thisFeet = unit.toFeet(value);
-        double otherFeet = other.unit.toFeet(other.value);
-
-        return Double.compare(thisFeet, otherFeet) == 0;
-    }
-
-    @Override
-    public String toString() {
-        return value + " " + unit;
-    }
+    return new QuantityLength(result, q1.unit);
 }
