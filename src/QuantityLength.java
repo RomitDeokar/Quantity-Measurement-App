@@ -1,23 +1,112 @@
-// ✅ STATIC ADD METHOD (CORE UC6)
-public static QuantityLength add(QuantityLength q1, QuantityLength q2) {
+package com.quantity;
 
-    if (q1 == null || q2 == null) {
-        throw new IllegalArgumentException("Operands cannot be null");
+import java.util.Objects;
+
+public class QuantityLength {
+
+    private final double value;
+    private final LengthUnit unit;
+    private static final double EPSILON = 1e-6;
+
+    public QuantityLength(double value, LengthUnit unit) {
+        if (!Double.isFinite(value)) {
+            throw new IllegalArgumentException("Invalid numeric value");
+        }
+        if (unit == null) {
+            throw new IllegalArgumentException("Unit cannot be null");
+        }
+        this.value = value;
+        this.unit = unit;
     }
 
-    if (!Double.isFinite(q1.value) || !Double.isFinite(q2.value)) {
-        throw new IllegalArgumentException("Invalid numeric values");
+    public double getValue() {
+        return value;
     }
 
-    // Step 1: Convert both to base (feet)
-    double q1Feet = q1.unit.toFeet(q1.value);
-    double q2Feet = q2.unit.toFeet(q2.value);
+    public LengthUnit getUnit() {
+        return unit;
+    }
 
-    // Step 2: Add
-    double sumFeet = q1Feet + q2Feet;
+    // ---------- CONVERSION ----------
+    public QuantityLength convertTo(LengthUnit targetUnit) {
+        if (targetUnit == null) {
+            throw new IllegalArgumentException("Target unit cannot be null");
+        }
 
-    // Step 3: Convert back to unit of FIRST operand
-    double result = q1.unit.fromFeet(sumFeet);
+        double base = toBaseUnit(this.value, this.unit);
+        double converted = fromBaseUnit(base, targetUnit);
 
-    return new QuantityLength(result, q1.unit);
+        return new QuantityLength(converted, targetUnit);
+    }
+
+    public static double convert(double value, LengthUnit source, LengthUnit target) {
+        if (!Double.isFinite(value)) {
+            throw new IllegalArgumentException("Invalid value");
+        }
+        if (source == null || target == null) {
+            throw new IllegalArgumentException("Units cannot be null");
+        }
+
+        double base = toBaseUnit(value, source);
+        return fromBaseUnit(base, target);
+    }
+
+    private static double toBaseUnit(double value, LengthUnit unit) {
+        return value * unit.getConversionFactor();
+    }
+
+    private static double fromBaseUnit(double baseValue, LengthUnit unit) {
+        return baseValue / unit.getConversionFactor();
+    }
+
+    // ---------- ADDITION (UC6 - default first operand unit) ----------
+    public QuantityLength add(QuantityLength other) {
+        return add(this, other, this.unit);
+    }
+
+    // ---------- ADDITION (UC7 - explicit target unit) ----------
+    public static QuantityLength add(QuantityLength q1, QuantityLength q2, LengthUnit targetUnit) {
+
+        if (q1 == null || q2 == null) {
+            throw new IllegalArgumentException("Operands cannot be null");
+        }
+        if (targetUnit == null) {
+            throw new IllegalArgumentException("Target unit cannot be null");
+        }
+
+        double base1 = toBaseUnit(q1.value, q1.unit);
+        double base2 = toBaseUnit(q2.value, q2.unit);
+
+        double sumBase = base1 + base2;
+
+        double result = fromBaseUnit(sumBase, targetUnit);
+
+        return new QuantityLength(result, targetUnit);
+    }
+
+    // ---------- EQUALITY ----------
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof QuantityLength)) return false;
+
+        QuantityLength other = (QuantityLength) obj;
+
+        double base1 = toBaseUnit(this.value, this.unit);
+        double base2 = toBaseUnit(other.value, other.unit);
+
+        return Math.abs(base1 - base2) < EPSILON;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                Math.round(toBaseUnit(value, unit) / EPSILON)
+        );
+    }
+
+    @Override
+    public String toString() {
+        return "Quantity(" + value + ", " + unit + ")";
+    }
 }
